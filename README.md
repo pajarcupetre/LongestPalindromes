@@ -21,8 +21,8 @@ In order to select the longest 3 we do the following steps:
     We need to filter them and select unique ones.
     
 
-Testing:
-sbt test
-Running:
-sbt run (will run with example test)  
-sbt "run yourstring" for your own test  
+Testing:  
+sbt test  
+Running:  
+sbt run (will run with example test)     
+sbt "run yourstring" for your own test    
