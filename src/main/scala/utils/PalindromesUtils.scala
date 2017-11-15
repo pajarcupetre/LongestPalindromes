@@ -4,12 +4,13 @@ import models.Palindrome
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 trait PalindromesUtils {
 
   def getPalindromes(stringInput: String): mutable.HashMap[String, Palindrome] = {
     val palindromes = mutable.HashMap[String, Palindrome]()
-    //brut force
+
     for (index <- 0 to stringInput.size-1) {
       val maxSizeEven = if (index > 0 && stringInput.charAt(index) ==  stringInput.charAt(index-1)) {
         findSizePalindromeEven(stringInput, index, index-2)
@@ -53,7 +54,32 @@ trait PalindromesUtils {
 
   def getLongestPalindromes(stringInput: String): Seq[Palindrome] = {
     val palindromes = getPalindromes(stringInput)
-    palindromes.toSeq.sortBy(_._1.size).takeRight(Constants.NumberOfPalindromes).reverse.map(_._2)
+    val palindromesSortedBySize = palindromes.toSeq.sortBy(_._1.size).reverse.map(_._2)
+    val longestPalindrome = palindromesSortedBySize.head
+    var longestUniquePalindromes = new ListBuffer[Option[Palindrome]]()
+    longestUniquePalindromes += Some(longestPalindrome)
+    var lastIndex = 1
+    for (index <- 2 to Constants.NumberOfPalindromes) {
+      val (palindrome, index) = getLongestDifferentPalindrome(palindromesSortedBySize.drop(lastIndex), longestUniquePalindromes)
+      longestUniquePalindromes += palindrome
+      lastIndex = index
+    }
+    longestUniquePalindromes.flatten
+  }
+
+  def getLongestDifferentPalindrome(palindromesSortedBySize: Seq[Palindrome],
+                                    selectedPalindromes: Seq[Option[Palindrome]]): (Option[Palindrome], Int) = {
+    for (index <- 0 to palindromesSortedBySize.size - 1) {
+      val palindrome = palindromesSortedBySize(index)
+      val palindromeUnique = selectedPalindromes.flatten.filter(
+        p => p.value.contains(palindrome.value) && p.startIndex <= palindrome.startIndex
+          && palindrome.startIndex + palindrome.value.size <= p.startIndex + p.value.size
+      ).size == 0
+      if (palindromeUnique) {
+        return (Some(palindrome), index)
+      }
+    }
+    return (None, palindromesSortedBySize.size)
   }
 
 }
